@@ -30,7 +30,7 @@ shop_url = "https://#{API_KEY}:#{PASSWORD}@#{SHOP_NAME}.myshopify.com/admin"
 ShopifyAPI::Base.site = shop_url
 
 products = ShopifyAPI::Product.where(:product_type => 'Juice')
-missing = []
+missing = {}
 
 products.each do |product|
   vendor = product.vendor
@@ -49,7 +49,10 @@ products.each do |product|
       puts "Option 2: #{option2}"
       puts "Goal: #{goal}"
       puts "Quantity: #{variant.inventory_quantity}"
-      missing.append({:vendor => vendor, :title => product.title, :nic => variant.option1, :size => option2, :quantity => (goal - variant.inventory_quantity)})
+
+      missing[vendor] = {} if !missing[vendor]
+      missing[vendor][product.title] = [] if !missing[vendor][product.title]
+      missing[vendor][product.title].append( {:nic => variant.option1, :size => option2, :quantity => (goal - variant.inventory_quantity) } )
     end
   end
 
@@ -57,5 +60,17 @@ end
 
 #Write report
 File.open(ARGV[0], 'a') do |file|
-  
+  missing.each do |vendor, titles|
+    file.write("#{vendor}:\n")
+
+    titles.each do |title, line_items|
+      file.write("\t#{title}\n")
+
+      line_items.each do |line_item|
+        file.write("\t\t#{line_item[:quantity]} #{line_item[:nic]}-#{line_item[:size]}\n")
+      end
+
+      file.write("\n")
+    end
+  end
 end
