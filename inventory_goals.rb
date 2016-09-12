@@ -20,9 +20,15 @@ inventory_goals = {
   'Vape Wild' => {
     '0mg' => {'30mL' => 3, '60mL' => 1},
     '3mg' => {'30mL' => 5, '60mL' => 3},
-    '6mg' => {'30mL' => 3, '60mL' => 1},
+    '6mg' => {'30mL' => 3, '60mL' => 2},
     '12mg' => {'30mL' => 0, '60mL' => 0},
     '18mg' => {'30mL' => 0, '60mL' => 0}
+  },
+  'Aspire' => {
+    '0mg' => {'15mL' => 0},
+    '3mg' => {'15mL' => 0},
+    '6mg' => {'15mL' => 0},
+    '12mg' => {'15mL' => 0}
   }
 }
 
@@ -36,23 +42,19 @@ products.each do |product|
   vendor = product.vendor
 
   product.variants.each do |variant|
-
-    #Hack around the fact that there is no option 2 on OFE because we haven't added different sizes yet
-    option2 = variant.option2 || '30mL'
-
-    goal = inventory_goals[vendor][variant.option1][option2]
+    goal = inventory_goals[vendor][variant.option1][variant.option2]
 
     if variant.inventory_quantity < goal
-      puts "Product title: #{product.title}"
-      puts "Vendor: #{vendor}"
-      puts "Option 1: #{variant.option1}"
-      puts "Option 2: #{option2}"
-      puts "Goal: #{goal}"
-      puts "Quantity: #{variant.inventory_quantity}"
+      #puts "Product title: #{product.title}"
+      #puts "Vendor: #{vendor}"
+      #puts "Option 1: #{variant.option1}"
+      #puts "Option 2: #{variant.option2}"
+      #puts "Goal: #{goal}"
+      #puts "Quantity: #{variant.inventory_quantity}"
 
       missing[vendor] = {} if !missing[vendor]
       missing[vendor][product.title] = [] if !missing[vendor][product.title]
-      missing[vendor][product.title].append( {:nic => variant.option1, :size => option2, :quantity => (goal - variant.inventory_quantity) } )
+      missing[vendor][product.title].append( {:nic => variant.option1, :size => variant.option2, :quantity => (goal - variant.inventory_quantity) } )
     end
   end
 
