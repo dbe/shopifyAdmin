@@ -21,12 +21,12 @@ task :inventory_goals, [:filename] => [:setup_api] do |t, args|
   inventory_goals = {
     'OFE' => {
       '0mg' => {'30mL' => 1},
-      '3mg' => {'30mL' => 3},
-      '6mg' => {'30mL' => 1}
+      '3mg' => {'30mL' => 2},
+      '6mg' => {'30mL' => 2}
     },
     'Vape Wild' => {
-      '0mg' => {'30mL' => 3, '60mL' => 1},
-      '3mg' => {'30mL' => 5, '60mL' => 3},
+      '0mg' => {'30mL' => 1, '60mL' => 1},
+      '3mg' => {'30mL' => 4, '60mL' => 3},
       '6mg' => {'30mL' => 3, '60mL' => 2},
       '12mg' => {'30mL' => 0, '60mL' => 0},
       '18mg' => {'30mL' => 0, '60mL' => 0}
@@ -100,7 +100,7 @@ task :sales_report => [:setup_api] do
         variant_id_to_count_map[le.variant_id] = 0
       end
 
-      variant_id_to_count_map[le.variant_id] += 1
+      variant_id_to_count_map[le.variant_id] += le.quantity 
     end
   end
 
