@@ -1,4 +1,5 @@
 require 'shopify_api'
+require_relative 'shopify_extensions.rb'
 
 API_KEY = ENV['SHOPIFY_ADMIN_API_KEY']
 PASSWORD = ENV['SHOPIFY_ADMIN_PASSWORD']
@@ -84,3 +85,50 @@ task :inventory_goals, [:filename] => [:setup_api] do |t, args|
 
 end
 
+task :sales_report => [:setup_api] do
+  puts "In running sales report"
+
+  variant_id_to_count_map = {}
+  products = []
+
+  ShopifyAPI::Order.find_all(:fulfillment_status => 'fulfilled') do |order|
+    puts "Order #: #{order.number}"
+
+    #Collect all variant counts sold
+    order.line_items.each do |le|
+      if not variant_id_to_count_map[le.variant_id]
+        variant_id_to_count_map[le.variant_id] = 0
+      end
+
+      variant_id_to_count_map[le.variant_id] += 1
+    end
+  end
+
+  ShopifyAPI::Product.find_all do |product|
+    variants = []
+
+    product.variants.each do |variant|
+      count = variant_id_to_count_map.key?(variant.id) ? variant_id_to_count_map[variant.id] : 0
+      variants.append({
+        :id => variant.id,
+        :title => variant.title,
+        :count => count
+      })
+    end
+
+    products.append({
+      :id => product.id,
+      :title => product.title,
+      :variants => variants
+    })
+  end
+
+  
+  products.each do |product|
+    puts "#{product[:title]}"
+
+    product[:variants].each do |variant|
+      puts "\t#{variant[:title]} --- #{variant[:count]}"
+    end
+  end
+end
